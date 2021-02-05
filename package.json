@@ -29,7 +29,7 @@
 				"sas.sasautos": {
 					"type": "array",
 					"default": [],
-					"description": "Paths to SAS autocall macro libraries."
+					"description": "Paths to SAS autocall macro libraries. Supports variable substitution for `${workspaceRoot}`."
 				}
 			}
 		}

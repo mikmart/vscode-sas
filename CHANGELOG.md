@@ -2,7 +2,9 @@
 
 All notable changes to the "sas" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [0.0.2]
+
+- Added missing documentation for `${workspaceRoot}` variable substitution.
 
 ## [0.0.1]
 
