@@ -1,10 +1,12 @@
 # SAS extension for Visual Studio Code
 
-This extension contributes a definition provider for SAS macros, enabling "Go to Definition" functionality in the editor.
+This extension contributes a definition provider for SAS macros, enabling "Go to Definition" functionality and hover tooltips in the editor.
 
 ## Features
 
-Enables "Go to Definition" support. Definitions are found in the current file, and all `.sas` files in directories listed in the `sas.sasautos` option. The option supports variable substitution for `${workspaceRoot}` to enable relative paths. 
+Definitions are searched for in the current file, and all `.sas` files in directories listed in the `sas.sasautos` option. The option supports variable substitution for `${workspaceRoot}` to enable relative paths.
+
+The signatures of found macro definitions are shown in the hover tooltip, and the "Go to Definition" is enabled to easily jump to the definition location.
 
 ## Requirements
 

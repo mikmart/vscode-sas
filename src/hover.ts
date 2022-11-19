@@ -1,15 +1,15 @@
 import * as vscode from "vscode";
 import { findMacroInfo } from "./macro";
 
-export class MacroDefinitionProvider implements vscode.DefinitionProvider {
-  async provideDefinition(
+export class MacroHoverProvider implements vscode.HoverProvider {
+  async provideHover(
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken
-  ): Promise<vscode.Location[] | undefined> {
+  ): Promise<vscode.Hover | undefined> {
     const macros = await findMacroInfo(document, position, token);
     if (macros) {
-        return macros.map((macro) => macro.location);
+        return new vscode.Hover(macros.map((macro) => macro.tooltip));
     }
   }
 }
