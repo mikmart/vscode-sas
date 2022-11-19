@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
-import { MacroDefinitionProvider } from "./definition";
-import { MacroHoverProvider } from "./hover";
+import { MacroDefinitionProvider } from "./providers/definition";
+import { MacroHoverProvider } from "./providers/hover";
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Extension "sas" is now active!');

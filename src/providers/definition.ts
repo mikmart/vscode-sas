@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { findMacroInfo } from "./macro";
+import { findMacroInfo } from "../macro";
 
 export class MacroDefinitionProvider implements vscode.DefinitionProvider {
   async provideDefinition(
@@ -9,7 +9,7 @@ export class MacroDefinitionProvider implements vscode.DefinitionProvider {
   ): Promise<vscode.Location[] | undefined> {
     const macros = await findMacroInfo(document, position, token);
     if (macros) {
-        return macros.map((macro) => macro.location);
+      return macros.map((macro) => macro.location);
     }
   }
 }

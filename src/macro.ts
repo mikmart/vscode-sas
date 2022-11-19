@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 import { EOL } from "os";
+
 import { getAutocallPaths } from "./config";
+import { collect } from "./utils";
 
 interface MacroInfo {
   tooltip: vscode.MarkdownString;
@@ -11,10 +13,10 @@ export async function findMacroInfo(
   document: vscode.TextDocument,
   position: vscode.Position,
   token: vscode.CancellationToken
-): Promise<MacroInfo[]> {
+): Promise<MacroInfo[] | undefined> {
   const macro = getMacroNameAtDocumentPosition(document, position);
   if (!macro) {
-    return Promise.resolve([]);
+    return undefined;
   }
 
   // Definitions in autocall libraries
@@ -101,16 +103,4 @@ function findMacroDefinitions(
   }
 
   return infos;
-}
-
-async function collect<T>(searches: Promise<T[]>[]): Promise<T[]> {
-  const results = await Promise.all(
-    searches.map((promise) =>
-      promise.catch((reason) => {
-        console.error(reason);
-        return [] as T[];
-      })
-    )
-  );
-  return results.flat();
 }
