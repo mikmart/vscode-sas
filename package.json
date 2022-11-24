@@ -1,6 +1,6 @@
 {
 	"name": "sas",
-	"displayName": "SAS",
+	"displayName": "SAS Macro Definitions",
 	"description": "SAS language macro definition provider.",
 	"homepage": "https://github.com/mikmart/vscode-sas",
 	"repository": {
