@@ -9,8 +9,9 @@ export function getAutocallPaths(): vscode.Uri[] {
 function substituteVariables(text: string): string | string[] {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (workspaceFolders) {
-    const workspaceRoot = workspaceFolders[0].uri.fsPath;
-    text = text.replace("${workspaceRoot}", workspaceRoot);
+    const roots = workspaceFolders.map((folder) => folder.uri.fsPath);
+    return roots.map((root) => text.replace("${workspaceRoot}", root));
+  } else {
+    return text;
   }
-  return text;
 }
