@@ -2,7 +2,7 @@
 
 All notable changes to the "sas" extension will be documented in this file.
 
-## [Unreleased]
+## [0.1.0] - 2022-11-24
 
 - Added a hover provider for macro definitions, showing the signature (#1).
 - Changed `${workspaceRoot}` to now expand into _all_ workspace root paths for multi-root workspaces, not only the first root path.
