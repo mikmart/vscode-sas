@@ -90,13 +90,17 @@ function findMacroDefinitions(
       if (endColumn > -1) {
         // Found complete definition statement
         const end = line.range.end.with({ character: endColumn + 1 });
+
+        // Assemble macro definition information
         const range = new vscode.Range(start, end);
-        infos.push({
-          tooltip: new vscode.MarkdownString(
-            ["```sas", document.getText(range), "```"].join(EOL)
-          ),
+        const signature = document.getText(range);
+        const tooltip = ["```sas", signature, "```"].join(EOL);
+        const info: MacroInfo = {
+          tooltip: new vscode.MarkdownString(tooltip),
           location: new vscode.Location(document.uri, range),
-        });
+        };
+
+        infos.push(info);
         start = undefined; // Reset search
       }
     }
