@@ -2,6 +2,8 @@
 
 This extension contributes a definition provider for SAS macros, enabling "Go to Definition" functionality and hover tooltips in the editor.
 
+![](images/demo.gif)
+
 ## Features
 
 Definitions are searched for in the current file, and all `.sas` files in directories listed in the `sas.sasautos` option. The option supports variable substitution for `${workspaceRoot}` to enable relative paths.
