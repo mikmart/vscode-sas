@@ -1,21 +1,21 @@
-# SAS extension for Visual Studio Code
+# SAS Macro Definitions for VS Code
 
-This extension contributes a definition provider for SAS macros, enabling "Go to Definition" functionality and hover tooltips in the editor.
+This Visual Studio Code extension enables "Go to Definition" and hover tooltips for macro functions in the SAS language.
 
-![](images/demo.gif)
+![Demonstrating hover tooltip and "Go to Definition" action.](images/demo.gif)
 
 ## Features
 
-Definitions are searched for in the current file, and all `.sas` files in directories listed in the `sas.sasautos` option. The option supports variable substitution for `${workspaceRoot}` to enable relative paths.
+The hover tooltip shows the full signature of the macro function, and "Go to Definition" is enabled for jumping to the location where the macro function is defined.
 
-The signatures of found macro definitions are shown in the hover tooltip, and the "Go to Definition" is enabled to easily jump to the definition location.
+Macro function definitions are found in the current file, and in all `.sas` files in directories listed in the `sas.sasautos` option. The option supports variable substitution for `${workspaceRoot}` to enable relative paths.
 
 ## Requirements
 
-For now, for the extension activates on the "sas" or "SAS" language id, but does not define an association itself. You must have another extension that contributes a SAS language grammar and file association. I use [77qingliu.sas-syntax](https://marketplace.visualstudio.com/items?itemName=77qingliu.sas-syntax).
+You must have another extension that contributes a SAS language grammar and file association. I use [77qingliu.sas-syntax](https://marketplace.visualstudio.com/items?itemName=77qingliu.sas-syntax).
 
 ## Extension Settings
 
 This extension contributes the following settings:
 
-* `sas.sasautos`: Paths to SAS autocall macro libraries. They searched are for macro definitions. Supports variable substitution for `${workspaceRoot}`.
+* `sas.sasautos`: Paths to SAS autocall macro libraries. They searched are for macro function definitions. Supports variable substitution for `${workspaceRoot}`. For example: `"${workspaceRoot}/Macros"`.
