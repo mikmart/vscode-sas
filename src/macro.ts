@@ -1,44 +1,35 @@
 import * as vscode from "vscode";
 import { EOL } from "os";
 
-import { getAutocallPaths } from "./config";
-import { collect } from "./utils";
-
 interface MacroInfo {
+  name: string;
   tooltip: vscode.MarkdownString;
   location: vscode.Location;
 }
 
-export async function findMacroInfo(
+export async function getMacroInfoAt(
   document: vscode.TextDocument,
   position: vscode.Position,
   token: vscode.CancellationToken
 ): Promise<MacroInfo[] | undefined> {
-  const macro = getMacroNameAtDocumentPosition(document, position);
-  if (!macro) {
+  const macroName = getMacroNameAt(document, position);
+  if (!macroName) {
     return undefined;
   }
 
-  // Definitions in autocall libraries
-  const sasautos = getAutocallPaths();
-  const searches = sasautos.map(async (directory) => {
-    const sasFiles = await findSasFiles(directory);
+  // Definitions in the current document.
+  const allDefinitions = discoverMacroDefinitions(document);
+  const definitions = allDefinitions.filter(macro => macro.name === macroName);
 
-    const searches = sasFiles.map(async (file) => {
-      const document = await vscode.workspace.openTextDocument(file);
-      return findMacroDefinitions(macro, document);
-    });
+  // Definitions from autocall libraries.
+  for (const autocall of autocalls) {
+    definitions.push(...autocall.getMacroInfo(macroName));
+  }
 
-    return collect(searches);
-  });
-
-  // Definitions in current document
-  searches.push(Promise.resolve(findMacroDefinitions(macro, document)));
-
-  return collect(searches);
+  return Promise.resolve(definitions);
 }
 
-function getMacroNameAtDocumentPosition(
+function getMacroNameAt(
   document: vscode.TextDocument,
   position: vscode.Position
 ): string | undefined {
@@ -47,7 +38,131 @@ function getMacroNameAtDocumentPosition(
     return undefined; // Not a macro
   } else {
     const start = range.start.translate({ characterDelta: 1 });
-    return document.getText(range.with({ start }));
+    return document.getText(range.with({ start })).toUpperCase();
+  }
+}
+
+function discoverMacroDefinitions(
+  document: vscode.TextDocument
+): MacroInfo[] {
+  // console.log(`Searching for macro definitions in ${document.fileName}.`);
+  const definition =  /%macro\s+((?!\d)\w+)\b/i;
+  const infos: MacroInfo[] = [];
+
+  let name: string | undefined;
+  let start: vscode.Position | undefined;
+  for (let i = 0; i < document.lineCount; i++) {
+    const line = document.lineAt(i);
+    let lineText = line.text;
+
+    // Look for start of definition if one is not open already
+    if (!start) {
+      const match = definition.exec(lineText);
+      if (match) {
+        // Found the start of a definition statement
+        name = match[1].toUpperCase();
+        start = line.range.start.with({ character: match.index });
+        lineText = lineText.slice(definition.lastIndex);
+      }
+    }
+
+    // Might have found a new start on this iteration
+    if (name && start) {
+      const endColumn = lineText.search(";");
+      if (endColumn > -1) {
+        // Found complete definition statement
+        const end = line.range.end.with({ character: endColumn + 1 });
+
+        // Assemble macro definition information
+        const range = new vscode.Range(start, end);
+        const signature = document.getText(range);
+        const tooltip = ["```sas", signature, "```"].join(EOL);
+        const info: MacroInfo = {
+          name: name,
+          tooltip: new vscode.MarkdownString(tooltip),
+          location: new vscode.Location(document.uri, range),
+        };
+
+        infos.push(info);
+
+        // Reset search
+        name = undefined;
+        start = undefined;
+      }
+    }
+  }
+
+  return infos;
+}
+
+// Initialised on extension activation.
+export const autocalls: AutocallLibrary[] = [];
+
+export class AutocallLibrary {
+  uri: vscode.Uri;
+  _index: Map<string, MacroInfo[]>;
+
+  constructor(uri: vscode.Uri) {
+    this.uri = uri;
+    this._index = new Map();
+  }
+
+  getMacroInfo(macroName: string): MacroInfo[] {
+    return this._index.get(macroName) ?? [];
+  }
+
+  async updateIndex() {
+    this._index.clear();
+
+    const files = await findSasFiles(this.uri);
+    const tasks = files.map(async (file) => {
+      const document = await vscode.workspace.openTextDocument(file);
+      const macros = discoverMacroDefinitions(document);
+
+      for (const macro of macros) {
+        if (!this._index.has(macro.name)) {
+          this._index.set(macro.name, [macro]);
+        } else {
+          this._index.get(macro.name)?.push(macro);
+        }
+      }
+    });
+
+    await Promise.all(tasks);
+  }
+
+  async updateIndexForFile(file: vscode.Uri) {
+    this.purgeFileFromIndex(file);
+
+    const document = await vscode.workspace.openTextDocument(file);
+    const macros = discoverMacroDefinitions(document);
+
+    for (const macro of macros) {
+      if (!this._index.has(macro.name)) {
+        this._index.set(macro.name, [macro]);
+      } else {
+        this._index.get(macro.name)?.push(macro);
+      }
+    }
+  }
+
+  async purgeFileFromIndex(file: vscode.Uri) {
+    this._index.forEach((indexed, macroName) => {
+      const cleared = indexed.filter(macro => {
+        return macro.location.uri.toString() !== file.toString();
+      });
+      this._index.set(macroName, cleared);
+    });
+  }
+
+  watch(): vscode.FileSystemWatcher {
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(this.uri.fsPath, "*.sas")
+    );
+    watcher.onDidChange(uri => this.updateIndexForFile(uri));
+    watcher.onDidCreate(uri => this.updateIndexForFile(uri));
+    watcher.onDidDelete(uri => this.purgeFileFromIndex(uri));
+    return watcher;
   }
 }
 
@@ -59,52 +174,4 @@ async function findSasFiles(directory: vscode.Uri): Promise<vscode.Uri[]> {
         name.endsWith(".sas") && type === vscode.FileType.File
     )
     .map(([name, _]) => vscode.Uri.joinPath(directory, name));
-}
-
-function findMacroDefinitions(
-  macro: string,
-  document: vscode.TextDocument
-): MacroInfo[] {
-  // console.log(`Searching for %${macro} in ${document.fileName}.`);
-  const definition = new RegExp(`%macro\\s+${macro}\\b`, "i");
-  const infos: MacroInfo[] = [];
-
-  let start: vscode.Position | undefined;
-  for (let i = 0; i < document.lineCount; i++) {
-    const line = document.lineAt(i);
-    let lineText = line.text;
-
-    // Look for start of definition if one is not open already
-    if (!start) {
-      const startColumn = lineText.search(definition);
-      if (startColumn > -1) {
-        // Found the start of a definition statement
-        start = line.range.start.with({ character: startColumn });
-        lineText = lineText.slice(startColumn);
-      }
-    }
-
-    // Might have found a new start on this iteration
-    if (start) {
-      const endColumn = lineText.search(";");
-      if (endColumn > -1) {
-        // Found complete definition statement
-        const end = line.range.end.with({ character: endColumn + 1 });
-
-        // Assemble macro definition information
-        const range = new vscode.Range(start, end);
-        const signature = document.getText(range);
-        const tooltip = ["```sas", signature, "```"].join(EOL);
-        const info: MacroInfo = {
-          tooltip: new vscode.MarkdownString(tooltip),
-          location: new vscode.Location(document.uri, range),
-        };
-
-        infos.push(info);
-        start = undefined; // Reset search
-      }
-    }
-  }
-
-  return infos;
 }
