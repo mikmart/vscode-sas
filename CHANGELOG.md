@@ -2,6 +2,11 @@
 
 All notable changes to the "sas" extension will be documented in this file.
 
+## [0.2.0] - 2024-03-04
+
+- Macro definitions in autocall libraries are now _cached_ for notably better
+  performance with large libraries and/or slow filesystems.
+
 ## [0.1.1] - 2022-11-25
 
 - Refined README to better describe the extension. No functional changes.

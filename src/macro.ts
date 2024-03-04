@@ -118,7 +118,6 @@ export class AutocallLibrary {
     const tasks = files.map(async (file) => {
       const document = await vscode.workspace.openTextDocument(file);
       const macros = discoverMacroDefinitions(document);
-
       for (const macro of macros) {
         if (!this._index.has(macro.name)) {
           this._index.set(macro.name, [macro]);
