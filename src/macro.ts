@@ -113,29 +113,27 @@ export class AutocallLibrary {
 
   async updateIndex() {
     this._index.clear();
-
     const files = await findSasFiles(this.uri);
-    const tasks = files.map(async (file) => {
-      const document = await vscode.workspace.openTextDocument(file);
-      const macros = discoverMacroDefinitions(document);
-      for (const macro of macros) {
-        if (!this._index.has(macro.name)) {
-          this._index.set(macro.name, [macro]);
-        } else {
-          this._index.get(macro.name)?.push(macro);
-        }
-      }
-    });
-
+    const tasks = files.map(this._addMacrosFromFile);
     await Promise.all(tasks);
   }
 
   async updateIndexForFile(file: vscode.Uri) {
-    this.purgeFileFromIndex(file);
+    await this.purgeFileFromIndex(file);
+    await this._addMacrosFromFile(file);
+  }
 
+  async purgeFileFromIndex(file: vscode.Uri) {
+    this._index.forEach((indexed, macroName) => {
+      this._index.set(macroName, indexed.filter(macro => {
+        return macro.location.uri.toString() !== file.toString();
+      }));
+    });
+  }
+
+  async _addMacrosFromFile(file: vscode.Uri) {
     const document = await vscode.workspace.openTextDocument(file);
     const macros = discoverMacroDefinitions(document);
-
     for (const macro of macros) {
       if (!this._index.has(macro.name)) {
         this._index.set(macro.name, [macro]);
@@ -143,15 +141,6 @@ export class AutocallLibrary {
         this._index.get(macro.name)?.push(macro);
       }
     }
-  }
-
-  async purgeFileFromIndex(file: vscode.Uri) {
-    this._index.forEach((indexed, macroName) => {
-      const cleared = indexed.filter(macro => {
-        return macro.location.uri.toString() !== file.toString();
-      });
-      this._index.set(macroName, cleared);
-    });
   }
 
   watch(): vscode.FileSystemWatcher {
@@ -168,9 +157,6 @@ export class AutocallLibrary {
 async function findSasFiles(directory: vscode.Uri): Promise<vscode.Uri[]> {
   const entries = await vscode.workspace.fs.readDirectory(directory);
   return entries
-    .filter(
-      ([name, type]: [string, vscode.FileType]) =>
-        name.endsWith(".sas") && type === vscode.FileType.File
-    )
+    .filter(([name, type]) => name.endsWith(".sas") && type === vscode.FileType.File)
     .map(([name, _]) => vscode.Uri.joinPath(directory, name));
 }
