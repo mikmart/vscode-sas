@@ -42,11 +42,8 @@ function getMacroNameAt(
   }
 }
 
-function discoverMacroDefinitions(
-  document: vscode.TextDocument
-): MacroInfo[] {
-  // console.log(`Searching for macro definitions in ${document.fileName}.`);
-  const definition =  /%macro\s+((?!\d)\w+)\b/i;
+function discoverMacroDefinitions(document: vscode.TextDocument): MacroInfo[] {
+  const definition = /%macro\s+((?!\d)\w+)\b/i;
   const infos: MacroInfo[] = [];
 
   let name: string | undefined;
