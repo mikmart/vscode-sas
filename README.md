@@ -12,7 +12,7 @@ Definitions are found in the current file, and in all `.sas` files in directorie
 
 ## Requirements
 
-You must have another extension adding a SAS language grammar and file association. I use [77qingliu.sas-syntax](https://marketplace.visualstudio.com/items?itemName=77qingliu.sas-syntax).
+You must have another extension adding a SAS language grammar and file association. I use [SAS.sas-lsp](https://marketplace.visualstudio.com/items?itemName=SAS.sas-lsp).
 
 ## Extension Settings
 
