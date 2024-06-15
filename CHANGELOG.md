@@ -5,6 +5,8 @@ All notable changes to the "sas" extension will be documented in this file.
 ## [0.2.1] - 2024-06-15
 
 - Added an example of settings usage in a `settings.json` file.
+- Fixed an issue that caused the extension to fail to initialise if settings
+  were provided in an unexpected format.
 
 ## [0.2.0] - 2024-03-04
 
