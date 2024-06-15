@@ -19,3 +19,11 @@ You must have another extension adding a SAS language grammar and file associati
 This extension contributes the following settings:
 
 * `sas.sasautos`: Paths to SAS autocall macro libraries. They searched are for macro function definitions. Supports variable substitution for `${workspaceRoot}`. For example: `"${workspaceRoot}/Macros"`.
+
+Example usage in `settings.json`:
+
+```json
+{
+    "sas.sasautos": [ "${workspaceRoot}/Macros" ]
+}
+```

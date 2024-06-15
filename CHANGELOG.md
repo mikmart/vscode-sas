@@ -2,6 +2,10 @@
 
 All notable changes to the "sas" extension will be documented in this file.
 
+## [0.2.1] - 2024-06-15
+
+- Added an example of settings usage in a `settings.json` file.
+
 ## [0.2.0] - 2024-03-04
 
 - Macro definitions in autocall libraries are now _cached_ for notably better
