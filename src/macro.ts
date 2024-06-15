@@ -114,7 +114,7 @@ export class AutocallLibrary {
   async updateIndex() {
     this._index.clear();
     const files = await findSasFiles(this.uri);
-    const tasks = files.map(this._addMacrosFromFile);
+    const tasks = files.map((file) => this._addMacrosFromFile(file));
     await Promise.all(tasks);
   }
 
