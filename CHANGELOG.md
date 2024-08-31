@@ -2,9 +2,14 @@
 
 All notable changes to the "sas" extension will be documented in this file.
 
+## [0.2.2] - 2024-08-31
+
+- Fixed an issue that sometimes caused the hover tooltip to display the macro
+  signature multiple times (#3).
+
 ## [0.2.1] - 2024-06-15
 
-- Added an example of settings usage in a `settings.json` file.
+- Added an example of settings usage in a `settings.json` file (#2).
 - Fixed an issue that caused the extension to fail to initialise if settings
   were provided in an unexpected format.
 

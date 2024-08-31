@@ -3,8 +3,8 @@ import { EOL } from "os";
 
 interface MacroInfo {
   name: string;
-  tooltip: vscode.MarkdownString;
   location: vscode.Location;
+  tooltip: vscode.MarkdownString;
 }
 
 export async function getMacroInfoAt(
@@ -26,7 +26,24 @@ export async function getMacroInfoAt(
     definitions.push(...autocall.getMacroInfo(macroName));
   }
 
-  return Promise.resolve(definitions);
+  return Promise.resolve(deduplicate(definitions));
+}
+
+// https://github.com/mikmart/vscode-sas/issues/3
+// The same definition can be found multiple times if the same file is found in
+// multiple autocall libs (for example via links or just duplicated records),
+// or when the current file is inside an autocall path. We would end up with
+// the macro definition popping up multiple times without pruning duplicates.
+function deduplicate(macros: MacroInfo[]): MacroInfo[] {
+  const uniqueMacros = new Map();
+  for (const macro of macros) {
+    uniqueMacros.set(locationStartToString(macro.location), macro);
+  }
+  return [...uniqueMacros.values()];
+}
+
+function locationStartToString(location: vscode.Location): string {
+  return `${location.uri.fsPath}:${location.range.start.line}:${location.range.start.character}`;
 }
 
 function getMacroNameAt(
@@ -76,8 +93,8 @@ function discoverMacroDefinitions(document: vscode.TextDocument): MacroInfo[] {
         const tooltip = ["```sas", signature, "```"].join(EOL);
         const info: MacroInfo = {
           name: name,
-          tooltip: new vscode.MarkdownString(tooltip),
           location: new vscode.Location(document.uri, range),
+          tooltip: new vscode.MarkdownString(tooltip),
         };
 
         infos.push(info);
