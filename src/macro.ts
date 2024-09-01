@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { EOL } from "os";
 
 interface MacroInfo {
   name: string;
@@ -90,14 +89,9 @@ function discoverMacroDefinitions(document: vscode.TextDocument): MacroInfo[] {
         // Assemble macro definition information
         const range = new vscode.Range(start, end);
         const signature = document.getText(range);
-        const tooltip = ["```sas", signature, "```"].join(EOL);
-        const info: MacroInfo = {
-          name: name,
-          location: new vscode.Location(document.uri, range),
-          tooltip: new vscode.MarkdownString(tooltip),
-        };
-
-        infos.push(info);
+        const location = new vscode.Location(document.uri, range);
+        const tooltip = new vscode.MarkdownString().appendCodeblock(signature, "sas");
+        infos.push({ name, location, tooltip });
 
         // Reset search
         name = undefined;

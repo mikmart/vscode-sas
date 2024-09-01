@@ -9,7 +9,8 @@ export class MacroHoverProvider implements vscode.HoverProvider {
   ): Promise<vscode.Hover | undefined> {
     const macros = await getMacroInfoAt(document, position, token);
     if (macros) {
-      return new vscode.Hover(deduplicate(macros.map((macro) => macro.tooltip)));
+      const tooltips = macros.map((macro) => macro.tooltip);
+      return new vscode.Hover(deduplicate(tooltips));
     }
   }
 }
